@@ -33,8 +33,8 @@ import static org.apache.http.HttpHeaders.USER_AGENT;
  */
 public class PostToLocal {
 
-    private static String postUrl = "http://sports.dev.y.univision.com/feeds/xml-team";
-    private static Long sleepTime = 100L;
+    private String postUrl = "http://sports.dev.y.univision.com/feeds/xml-team";
+    private Long sleepTime = 100L;
 
     private String getXMLTeamURL(String url) throws IOException {
 
@@ -120,7 +120,7 @@ public class PostToLocal {
             System.out.println(filename);
 
             HttpClient client = HttpClientBuilder.create().build();
-            HttpPost post = new HttpPost(PostToLocal.postUrl);
+            HttpPost post = new HttpPost(this.postUrl);
             HttpEntity entity;
 
             post.setHeader("User-Agent", USER_AGENT);
@@ -163,11 +163,11 @@ public class PostToLocal {
         }
     }
 
-    public static void setPostUrl(String postUrl) {
-        PostToLocal.postUrl = postUrl;
+    public void setPostUrl(String postUrl) {
+        this.postUrl = postUrl;
     }
 
-    public static void setSleepTime(Long sleepTime) {
-        PostToLocal.sleepTime = sleepTime;
+    public void setSleepTime(Long sleepTime) {
+        this.sleepTime = sleepTime;
     }
 }
