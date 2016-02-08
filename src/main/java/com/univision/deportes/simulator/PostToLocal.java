@@ -24,6 +24,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
@@ -119,6 +120,8 @@ public class PostToLocal {
 
             System.out.println(filename);
 
+            Long startTime = new Date().getTime();
+
             HttpClient client = HttpClientBuilder.create().build();
             HttpPost post = new HttpPost(this.postUrl);
             HttpEntity entity;
@@ -142,6 +145,9 @@ public class PostToLocal {
             }
             System.out.println(result);
 
+            Long endTime = new Date().getTime();
+
+            System.out.println("Processing time :" + (endTime - startTime) + "ms");
             Thread.sleep(sleepTime);
         }
     }
