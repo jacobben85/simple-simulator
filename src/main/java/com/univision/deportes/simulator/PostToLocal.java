@@ -147,7 +147,7 @@ public class PostToLocal {
 
             Long endTime = new Date().getTime();
 
-            System.out.println("Processing time :" + (endTime - startTime) + "ms");
+            System.out.println("Processing time : " + (endTime - startTime)/1000 + " seconds");
             Thread.sleep(sleepTime);
         }
     }
