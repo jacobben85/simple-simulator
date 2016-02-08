@@ -29,12 +29,12 @@ public class Simulator {
             System.out.println("To server : " + postUrl);
         }
 
-        //String fixtureKeys = "event-stats,event-stats-progressive";
+        String fixtureKeys = "event-stats,event-stats-progressive,event-commentary";
         String url = "http://staging.xmlteam.com/api/feeds?" +
                 "start=" + startTime +
                 "&publisher-keys=optasports.com" +
                 "&sport-keys=15054000" +
-                //"&fixture-keys=" + fixtureKeys +
+                "&fixture-keys=" + fixtureKeys +
                 //"&last-files-by=event-key&fixture-keys=event-stats,event-commentary,event-reports" +
                 "&format=xml" +
                 "&event-keys=EFBO" + eventId;
