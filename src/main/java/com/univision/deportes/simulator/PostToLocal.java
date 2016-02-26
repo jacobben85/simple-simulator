@@ -5,6 +5,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.w3c.dom.Document;
@@ -22,10 +23,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
@@ -44,56 +42,87 @@ public class PostToLocal {
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("Authorization", "Basic dW5pdmlzaW9uOmM0Ymwz");
         httpGet.setURI(uri);
-        HttpResponse response = client.execute(httpGet);
-        BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
-        StringBuilder result = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            result.append(line);
+        int retry = 3;
+
+        while (retry > 0) {
+
+            try {
+                HttpResponse response = client.execute(httpGet);
+
+                if (response.getStatusLine().getStatusCode() != 200 && response.getStatusLine().getStatusCode() != 201) {
+                    System.out.println("Response code : " + response.getStatusLine().getStatusCode());
+                    return null;
+                }
+                BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+
+                StringBuilder result = new StringBuilder();
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    result.append(line);
+                }
+                return result.toString();
+            } catch (HttpHostConnectException e) {
+                retry--;
+            }
         }
-        return result.toString();
+        return null;
     }
 
-    private List<String> getSportsMLDocURLs(String manifest) {
+    private Iterable<List<String>> getSportsMLDocURLs(final String manifest) {
 
-        List<String> urls = new ArrayList<String>();
-        try {
-            // Convert to a document.
-            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = builder = builderFactory.newDocumentBuilder();
-            Document document = builder.parse(new ByteArrayInputStream(manifest.getBytes()));
+        return new Iterable<List<String>>() {
+            public Iterator<List<String>> iterator() {
+                return new Iterator<List<String>>() {
 
-            // Pull all the file paths from the manifest.
-            XPath xPath =  XPathFactory.newInstance().newXPath();
-            String pathExpression = "//document-listing/file-path";
-            NodeList nodeList = null;
-            nodeList = (NodeList) xPath.compile(pathExpression).evaluate(document, XPathConstants.NODESET);
+                    boolean hasNext = false;
+                    List<String> urls = new ArrayList<String>();
 
-            // Go through the manifest and add paths to the list.
-            for (int index = 0; index < nodeList.getLength(); index++) {
-                Node node = nodeList.item(index);
-                urls.add(node.getTextContent());
+                    public boolean hasNext() {
+                        try {
+                            // Convert to a document.
+                            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+                            DocumentBuilder builder = builder = builderFactory.newDocumentBuilder();
+                            Document document = builder.parse(new ByteArrayInputStream(manifest.getBytes()));
+
+                            // Pull all the file paths from the manifest.
+                            XPath xPath =  XPathFactory.newInstance().newXPath();
+                            String pathExpression = "//document-listing/file-path";
+                            NodeList nodeList = null;
+                            nodeList = (NodeList) xPath.compile(pathExpression).evaluate(document, XPathConstants.NODESET);
+
+                            // Go through the manifest and add paths to the list.
+                            for (int index = 0; index < nodeList.getLength(); index++) {
+                                Node node = nodeList.item(index);
+                                urls.add(node.getTextContent());
+                            }
+
+                            // Page through the manifest if there is more.
+                            String nextExpression = "//metadata/next/text()";
+                            String next = (String) xPath.compile(nextExpression).evaluate(document, XPathConstants.STRING);
+
+                            // Recursively call next page.
+                            if (next != null && !next.isEmpty()) {
+                                hasNext = true;
+                                urls.add(next);
+                            }
+
+                        } catch (XPathExpressionException e) {
+                        } catch (SAXException e) {
+                        } catch (IOException e) {
+                        } catch (ParserConfigurationException e) {
+                        }
+
+                        return hasNext;
+                    }
+
+                    public List<String> next() {
+                        hasNext();
+                        return urls;
+                    }
+                };
             }
-            System.out.println("url count at this point : " + urls.size());
-
-            // Page through the manifest if there is more.
-            String nextExpression = "//metadata/next/text()";
-            String next = (String) xPath.compile(nextExpression).evaluate(document, XPathConstants.STRING);
-
-            // Recursively call next page.
-            if (next != null && !next.isEmpty()) {
-                System.out.println(next);
-                urls.addAll( getSportsMLDocURLs(getXMLTeamURL(next)) );
-            }
-
-        } catch (XPathExpressionException e) {
-        } catch (SAXException e) {
-        } catch (IOException e) {
-        } catch (ParserConfigurationException e) {
-        }
-
-        return urls;
+        };
     }
 
     private String generateFileName(String feedUrl) {
@@ -104,17 +133,32 @@ public class PostToLocal {
     }
 
     public void fetchLinksAndProcess(String url) throws IOException, InterruptedException {
-        String response = getXMLTeamURL(url);
-        List<String> feedUrls = getSportsMLDocURLs(response);
-
-        System.out.println("total items count : " + feedUrls.size());
-        processLinks(feedUrls);
+        boolean process = true;
+        while (process) {
+            System.out.println("Processing : " + url);
+            String response = getXMLTeamURL(url);
+            Iterable<List<String>> feedUrls = getSportsMLDocURLs(response);
+            process = feedUrls.iterator().hasNext();
+            List<String> urls = feedUrls.iterator().next();
+            if (process) {
+                int lastIndex = urls.size();
+                url = urls.remove(lastIndex - 1);
+            }
+            System.out.println("total items count : " + urls.size());
+            processLinks(urls);
+        }
     }
 
     void processLinks(List<String> feedUrls) throws IOException, InterruptedException {
 
         for (String feedUrl : feedUrls) {
             String feedResponse = getXMLTeamURL("http://staging.xmlteam.com/sportsml/files/" + feedUrl);
+
+            if (feedResponse == null) {
+                System.out.println("Skipping : " + feedUrl + " returned null");
+                continue;
+            }
+
             InputStream stream = new ByteArrayInputStream(feedResponse.getBytes(StandardCharsets.UTF_8));
             String filename = generateFileName(feedUrl);
 
