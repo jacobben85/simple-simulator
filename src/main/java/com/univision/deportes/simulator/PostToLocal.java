@@ -132,7 +132,7 @@ public class PostToLocal {
         return xmlname.substring(0, xmlname.length() - 4) + ".xml";
     }
 
-    public void fetchLinksAndProcess(String url) throws IOException, InterruptedException {
+    public void fetchLinksAndProcess(String url, boolean sample) throws IOException, InterruptedException {
         boolean process = true;
         Long processCount = 0L;
         while (process) {
@@ -147,7 +147,9 @@ public class PostToLocal {
             }
             int urlCount = urls.size();
             System.out.println("items count : " + urlCount);
-            processLinks(urls);
+            if (!sample) {
+                processLinks(urls);
+            }
             processCount += urlCount;
         }
         System.out.println("End : total items count : " + processCount);

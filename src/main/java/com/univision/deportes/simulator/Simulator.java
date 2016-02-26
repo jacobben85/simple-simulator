@@ -11,7 +11,7 @@ public class Simulator {
         String eventId = "840462";
         String startTime = "P10M";
 
-        Long sleep = 2000L;
+        Long sleep = 500L;
         String postUrl = "http://sports.dev.y.univision.com/feeds/xml-team-backfile";
 
         if (args.length > 0) {
@@ -52,6 +52,6 @@ public class Simulator {
         postToLocal.setSleepTime(sleep);
         postToLocal.setPostUrl(postUrl);
 
-        postToLocal.fetchLinksAndProcess(url);
+        postToLocal.fetchLinksAndProcess(url, true);
     }
 }
