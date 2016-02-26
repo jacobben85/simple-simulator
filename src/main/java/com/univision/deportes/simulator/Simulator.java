@@ -44,7 +44,9 @@ public class Simulator {
                 "publisher-keys=optasports.com&" +
                 "format=xml&" +
                 "fixture-keys=schedule-results,event-stats,event-commentary,event-reports" +
-                "&start=P3Y&last-files-by=event-key";
+                "&start=P3Y" +
+                "&last-files-by=event-key" +
+                "&sport-keys=15054000";
 
         System.out.println(url);
 
