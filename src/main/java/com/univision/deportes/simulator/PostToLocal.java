@@ -134,6 +134,7 @@ public class PostToLocal {
 
     public void fetchLinksAndProcess(String url) throws IOException, InterruptedException {
         boolean process = true;
+        Long processCount = 0L;
         while (process) {
             System.out.println("Processing : " + url);
             String response = getXMLTeamURL(url);
@@ -144,9 +145,12 @@ public class PostToLocal {
                 int lastIndex = urls.size();
                 url = urls.remove(lastIndex - 1);
             }
-            System.out.println("total items count : " + urls.size());
+            int urlCount = urls.size();
+            System.out.println("items count : " + urlCount);
             processLinks(urls);
+            processCount += urlCount;
         }
+        System.out.println("End : total items count : " + processCount);
     }
 
     void processLinks(List<String> feedUrls) throws IOException, InterruptedException {

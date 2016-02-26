@@ -8,11 +8,11 @@ import java.io.IOException;
 public class Simulator {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        String eventId = "840461";
+        String eventId = "840462";
         String startTime = "P10M";
 
-        Long sleep = 500L;
-        String postUrl = "http://sports.dev.y.univision.com/feeds/xml-team";
+        Long sleep = 2000L;
+        String postUrl = "http://sports.dev.y.univision.com/feeds/xml-team-backfile";
 
         if (args.length > 0) {
             eventId = args[0];
@@ -30,6 +30,8 @@ public class Simulator {
         }
 
         String fixtureKeys = "event-stats,event-stats-progressive,event-commentary";
+
+        //noinspection UnusedAssignment
         String url = "http://staging.xmlteam.com/api/feeds?" +
                 "start=" + startTime +
                 "&publisher-keys=optasports.com" +
@@ -38,6 +40,12 @@ public class Simulator {
                 //"&last-files-by=event-key&fixture-keys=event-stats,event-commentary,event-reports" +
                 "&format=xml" +
                 "&event-keys=EFBO" + eventId;
+        url = "http://staging.xmlteam.com/api/feeds?" +
+                "publisher-keys=optasports.com&" +
+                "format=xml&" +
+                "fixture-keys=schedule-results,event-stats,event-commentary,event-reports" +
+                "&start=P3Y&last-files-by=event-key";
+
         System.out.println(url);
 
         PostToLocal postToLocal = new PostToLocal();
