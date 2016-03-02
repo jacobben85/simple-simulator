@@ -43,9 +43,9 @@ public class Simulator {
         url = "http://staging.xmlteam.com/api/feeds?" +
                 "publisher-keys=optasports.com&" +
                 "format=xml&" +
-                "fixture-keys=schedule-results,event-stats,event-commentary,event-reports" +
+                "fixture-keys=schedule-results,event-stats,event-commentary,event-reports,standings,rosters" +
                 "&start=P3Y" +
-                "&last-files-by=event-key" +
+                //"&last-files-by=event-key" +
                 "&sport-keys=15054000";
 
         System.out.println(url);
