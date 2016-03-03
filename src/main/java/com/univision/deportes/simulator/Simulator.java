@@ -43,13 +43,20 @@ public class Simulator {
         url = "http://staging.xmlteam.com/api/feeds?" +
                 "publisher-keys=optasports.com&" +
                 "format=xml&" +
-                "fixture-keys=schedule-results,event-stats,event-commentary,event-reports,standings,rosters" +
+                "league-keys=&fixture-keys=event-stats,event-commentary&event-status=post-event" +
                 "&start=P3Y" +
                 //"&last-files-by=event-key" +
                 "&sport-keys=15054000";
 
         System.out.println(url);
 
+        //urlProcessor(sleep, postUrl, url);
+
+        UrlFileReader urlFileReader = new UrlFileReader();
+        urlFileReader.run();
+    }
+
+    private static void urlProcessor(Long sleep, String postUrl, String url) throws IOException, InterruptedException {
         PostToLocal postToLocal = new PostToLocal();
         postToLocal.setSleepTime(sleep);
         postToLocal.setPostUrl(postUrl);

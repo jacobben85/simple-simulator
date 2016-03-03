@@ -34,6 +34,7 @@ public class PostToLocal {
 
     private String postUrl = "http://sports.dev.y.univision.com/feeds/xml-team";
     private Long sleepTime = 100L;
+    boolean download = true;
 
     private String getXMLTeamURL(String url) throws IOException {
 
@@ -170,6 +171,11 @@ public class PostToLocal {
 
             System.out.println(filename);
 
+            if (download) {
+                writeResponseToFile(filename, feedResponse);
+                continue;
+            }
+
             Long startTime = new Date().getTime();
 
             HttpClient client = HttpClientBuilder.create().build();
@@ -225,5 +231,14 @@ public class PostToLocal {
 
     public void setSleepTime(Long sleepTime) {
         this.sleepTime = sleepTime;
+    }
+
+    private void writeResponseToFile(String filename, String content) throws FileNotFoundException {
+        //String dir = this.getClass().getResource("/urls.txt").getFile();
+        //OutputStream os = new FileOutputStream(dir.replace("urls.txt", "data") + "/" + filename);
+        OutputStream os = new FileOutputStream("/tmp/data" + "/" + filename);
+        final PrintStream printStream = new PrintStream(os);
+        printStream.println(content);
+        printStream.close();
     }
 }
