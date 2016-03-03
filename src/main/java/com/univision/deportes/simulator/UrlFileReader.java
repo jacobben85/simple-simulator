@@ -22,8 +22,10 @@ public class UrlFileReader {
     private static Map<String, String> processorInstances = new HashMap<>();
     private ExecutorService asyncExecutor;
 
+    private static final int THREAD_COUNT = 5;
+
     UrlFileReader() {
-        this.asyncExecutor = Executors.newFixedThreadPool(10);
+        this.asyncExecutor = Executors.newFixedThreadPool(THREAD_COUNT);
     }
 
     public void run() throws IOException, InterruptedException {
@@ -79,10 +81,12 @@ public class UrlFileReader {
     }
 
     protected boolean hasToWait() {
-        if (processorInstances.size() > 9) {
-            return true;
+        synchronized(processorInstances) {
+            if (processorInstances.size() <= THREAD_COUNT) {
+                return false;
+            }
         }
-        return false;
+        return true;
     }
 
     public static String md5(String string) {
